@@ -14,7 +14,7 @@ const Wallet = ({ name, state, iconUrl, clickHandler }: IWalletProps) => {
   return (
     <div className={styles.box} onClick={() => clickHandler()}>
       <div className={styles.icon}>
-        {iconUrl ? <img src={iconUrl} /> : null}
+        {iconUrl ? <img src={iconUrl} alt={`${name} wallet icon`} /> : null}
       </div>
       <div className={styles.info}>
         <div>{name}</div>

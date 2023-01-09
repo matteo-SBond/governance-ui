@@ -193,9 +193,9 @@ function ConnectedApp({ api }: { api: ApiPromise }): JSX.Element {
     state: State.LOADING,
   });
   const { connectedAccount } = useAccount();
-
+  const currentAddress = connectedAccount?.account?.address;
   useEffect(() => {
-    async function fetchData(api: ApiPromise) {
+    async function fetchData(api: ApiPromise, address: string | undefined) {
       const tracks = getAllTracks(api);
 
       // Retrieve all referenda, then display them
@@ -206,7 +206,7 @@ function ConnectedApp({ api }: { api: ApiPromise }): JSX.Element {
       // Only consider 'ongoing' referendum
       const referenda = new Map(
         [...allReferenda]
-          .filter(([, v]) => v.type == 'ongoing')
+          .filter(([, v]) => v.type === 'ongoing')
           .map(([index, referendum]) => [index, referendum]) as [
           number,
           ReferendumOngoing
@@ -226,11 +226,10 @@ function ConnectedApp({ api }: { api: ApiPromise }): JSX.Element {
         }
       });
 
-      const currentAddress = connectedAccount?.account?.address;
-      if (currentAddress) {
+      if (address) {
         // Go through user votes and restore the ones relevant to `referenda`
         const chainVotings = await measured('votingFor', () =>
-          getVotingFor(api, currentAddress)
+          getVotingFor(api, address)
         );
         chainVotings.forEach((voting) => {
           if (voting.type === 'casting') {
@@ -259,12 +258,12 @@ function ConnectedApp({ api }: { api: ApiPromise }): JSX.Element {
     }
 
     try {
-      api && fetchData(api);
+      api && fetchData(api, currentAddress);
     } catch (e) {
       console.error(`Failed to fetch referenda: ${e}`);
       setError('Failed to fetch data in time');
     }
-  }, [api]);
+  }, [api, currentAddress]);
 
   return (
     <div className={styles.app}>

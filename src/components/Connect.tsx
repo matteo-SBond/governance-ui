@@ -90,7 +90,7 @@ const ConnectButton = (props) => {
     );
   };
   const walletConnectHandler = async (wallet: BaseWallet) => {
-    if (walletState.get(wallet?.metadata.title) == 'connected') {
+    if (walletState.get(wallet?.metadata.title) === 'connected') {
       await wallet.disconnect();
       setWalletState(wallet?.metadata.title, 'disconnected');
     } else {

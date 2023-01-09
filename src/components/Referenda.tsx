@@ -86,7 +86,7 @@ const ReferendumCard = memo(
         }
       }
       fetchData();
-    }, []);
+    }, [network, index]);
 
     if (error) {
       return <div>{error}</div>;
@@ -149,7 +149,7 @@ export function ReferendaDeck({
         if (index !== i) return; // We're only interested in changing spring-data for the current spring
         const isGone = gone.has(index);
         if (isGone) {
-          voteHandler(referenda[i][0], createStandardAccountVote(xDir == 1));
+          voteHandler(referenda[i][0], createStandardAccountVote(xDir === 1));
         }
         const x = isGone ? (200 + window.innerWidth) * xDir : active ? mx : 0; // When a card is gone it flys out left or right, otherwise goes back to zero
         const rot = mx / 100 + (isGone ? xDir * 10 * vx : 0); // How much the card tilts, flicking it harder makes it rotate faster
@@ -170,7 +170,7 @@ export function ReferendaDeck({
     }
   );
 
-  if (referenda.length == 0) {
+  if (referenda.length === 0) {
     return <Text>No new referenda to vote on</Text>;
   } else {
     // Now we're just mapping the animated values to our view, that's it. Btw, this component only renders once. :-)
