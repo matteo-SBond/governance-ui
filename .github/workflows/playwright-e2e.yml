@@ -1,7 +1,7 @@
 name: Playwright Tests
 on:
   push:
-    branches: [main]
+    branches: [main, hamid/e2e-podman]
   pull_request:
     branches: [main]
 jobs:
@@ -15,31 +15,18 @@ jobs:
         uses: actions/setup-node@v3
 
       - name: Install
-        run:  yarn install --immutable --immutable-cache --check-cache
+        run: yarn install --immutable --immutable-cache --check-cache
 
-      # Spawn a zombienet chain in background
-      # ToDo: switch to zombienet podman when static ports are supported
-      # podman is preferred but currently it is not possible to set static ports
-      #- name: podman
-      #  run: sudo apt-get -y update
-      # zombienet
-      #- name: podman install
-      #  run: sudo apt-get -y install podman
-      #- name: Run zombienet
-      #  run: yarn zombienet:podman
-      - name: Download polkadot
+      - name: Install podman
         run: |
-          curl -L https://github.com/paritytech/polkadot/releases/latest/download/polkadot -o "${GITHUB_WORKSPACE}/polkadot"
-          chmod 777 "${GITHUB_WORKSPACE}/polkadot"
-          echo PATH=$PATH:"${GITHUB_WORKSPACE}" >> $GITHUB_ENV
+          sudo apt-get -y update 
+          sudo apt-get -y install podman
 
-      - name: Display polkadot version
-        run: polkadot --version
-
+      # Start zombienet in background
       - name: Background Zombienet Server
         uses: BerniWittmann/background-server-action@v1
         with:
-          start: yarn zombienet:native
+          start: yarn zombienet:podman
           wait-on: "http://127.0.0.1:9996/metrics"
 
       # Start the web app in background
