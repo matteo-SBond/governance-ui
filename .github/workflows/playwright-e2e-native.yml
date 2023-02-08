@@ -1,0 +1,57 @@
+name: Playwright Tests
+on:
+  push:
+    branches: [main, hamid/e2e-podman]
+  pull_request:
+    branches: [main]
+jobs:
+  e2e_test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+
+      - name: Install
+        run: yarn install --immutable --immutable-cache --check-cache
+
+      - name: Download polkadot
+        run: |
+          curl -L https://github.com/paritytech/polkadot/releases/latest/download/polkadot -o "${GITHUB_WORKSPACE}/polkadot"
+          chmod 777 "${GITHUB_WORKSPACE}/polkadot"
+          echo PATH=$PATH:"${GITHUB_WORKSPACE}" >> $GITHUB_ENV
+      - name: Display polkadot version
+        run: polkadot --version
+
+      # Start zombienet in background
+      - name: Background Zombienet Server
+        uses: BerniWittmann/background-server-action@v1
+        with:
+          start: yarn zombienet:native
+          wait-on: "http://127.0.0.1:9996/metrics"
+          # wait for 2 minutes for the server to respond
+          wait-on-timeout: 120
+
+      # Start the web app in background
+      - name: Background App Server
+        uses: BerniWittmann/background-server-action@v1
+        with:
+          start: yarn dev
+          wait-on: "http://localhost:1234"
+
+      - name: Install Playwright Browsers
+        run: yarn playwright install --with-deps
+
+      - name: Run Playwright tests
+        run: yarn test:e2e
+        env:
+          URL: http://127.0.0.1:1234/?rpc=ws://127.0.0.1:9984
+
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30

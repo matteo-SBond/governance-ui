@@ -1,4 +1,4 @@
-name: Playwright Tests
+name: Playwright Tests Podman
 on:
   push:
     branches: [main, hamid/e2e-podman]
@@ -28,6 +28,8 @@ jobs:
         with:
           start: yarn zombienet:podman
           wait-on: "http://127.0.0.1:9996/metrics"
+          # wait for 2 minutes for the server to respond
+          wait-on-timeout: 120
 
       # Start the web app in background
       - name: Background App Server
