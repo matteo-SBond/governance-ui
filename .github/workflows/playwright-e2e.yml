@@ -1,7 +1,7 @@
-name: Playwright Tests Podman
+name: Playwright Tests
 on:
   push:
-    branches: [main, hamid/e2e-podman]
+    branches: [main]
   pull_request:
     branches: [main]
 jobs:
@@ -17,16 +17,19 @@ jobs:
       - name: Install
         run: yarn install --immutable --immutable-cache --check-cache
 
-      - name: Install podman
+      - name: Download polkadot
         run: |
-          sudo apt-get -y update 
-          sudo apt-get -y install podman
+          curl -L https://github.com/paritytech/polkadot/releases/latest/download/polkadot -o "${GITHUB_WORKSPACE}/polkadot"
+          chmod 777 "${GITHUB_WORKSPACE}/polkadot"
+          echo PATH=$PATH:"${GITHUB_WORKSPACE}" >> $GITHUB_ENV
+      - name: Display polkadot version
+        run: polkadot --version
 
       # Start zombienet in background
       - name: Background Zombienet Server
         uses: BerniWittmann/background-server-action@v1
         with:
-          start: yarn zombienet:podman
+          start: yarn zombienet:native
           wait-on: "http://127.0.0.1:9996/metrics"
           # wait for 2 minutes for the server to respond
           wait-on-timeout: 120
